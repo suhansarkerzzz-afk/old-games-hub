@@ -21,6 +21,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -61,7 +63,9 @@ import com.oldgameshub.app.ui.theme.WarmIvory
 @Composable
 fun GameLibraryScreen(
     initialQuery: String,
+    favoriteGameIds: Set<String>,
     onGameClick: (String) -> Unit,
+    onFavoriteChange: (String, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by rememberSaveable { mutableStateOf(initialQuery) }
@@ -196,7 +200,12 @@ fun GameLibraryScreen(
             }
         } else {
             items(filteredGames, key = { it.id }) { game ->
-                GameLibraryCard(game = game, onClick = { onGameClick(game.id) })
+                GameLibraryCard(
+                    game = game,
+                    isFavorite = game.id in favoriteGameIds,
+                    onClick = { onGameClick(game.id) },
+                    onFavoriteClick = { onFavoriteChange(game.id, game.id !in favoriteGameIds) }
+                )
             }
         }
 
@@ -218,7 +227,12 @@ fun GameLibraryScreen(
 }
 
 @Composable
-private fun GameLibraryCard(game: RetroGame, onClick: () -> Unit) {
+private fun GameLibraryCard(
+    game: RetroGame,
+    isFavorite: Boolean,
+    onClick: () -> Unit,
+    onFavoriteClick: () -> Unit
+) {
     val tileColor = when (game.accent) {
         GameAccent.BLUE -> SoftBlue
         GameAccent.CORAL -> Color(0xFFF8E9E4)
@@ -269,7 +283,13 @@ private fun GameLibraryCard(game: RetroGame, onClick: () -> Unit) {
                     )
                 }
             }
-            Text("›", color = RoyalBlue, fontSize = 27.sp, fontWeight = FontWeight.Medium)
+            IconButton(onClick = onFavoriteClick) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                    tint = if (isFavorite) Coral else Slate
+                )
+            }
         }
     }
 }
