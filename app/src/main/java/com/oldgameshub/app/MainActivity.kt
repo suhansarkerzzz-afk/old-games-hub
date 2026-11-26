@@ -1,9 +1,12 @@
 package com.oldgameshub.app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,6 +31,7 @@ import androidx.compose.material.icons.filled.SportsEsports
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -43,9 +47,26 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.toRoute
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import com.oldgameshub.app.data.GameCatalog
+import com.oldgameshub.app.navigation.GameDetailsRoute
+import com.oldgameshub.app.navigation.HomeRoute
+import com.oldgameshub.app.navigation.LibraryRoute
+import com.oldgameshub.app.navigation.MyGamesRoute
+import com.oldgameshub.app.navigation.ProfileRoute
+import com.oldgameshub.app.ui.details.GameDetailsScreen
+import com.oldgameshub.app.ui.library.GameLibraryScreen
 import com.oldgameshub.app.ui.theme.Coral
 import com.oldgameshub.app.ui.theme.DeepNavy
 import com.oldgameshub.app.ui.theme.OldGamesHubTheme
@@ -58,6 +79,10 @@ import com.oldgameshub.app.ui.theme.WarmIvory
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             OldGamesHubTheme {
                 OldGamesHubApp()
@@ -75,56 +100,113 @@ private enum class HubTab(val label: String) {
 
 @Composable
 private fun OldGamesHubApp() {
-    var selectedTab by rememberSaveable { mutableStateOf(HubTab.Home) }
+    val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+    val isDetailsScreen = currentDestination?.hasRoute<GameDetailsRoute>() == true
 
     Scaffold(
         containerColor = WarmIvory,
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                HubTab.entries.forEach { tab ->
-                    val icon = when (tab) {
-                        HubTab.Home -> Icons.Default.Home
-                        HubTab.Library -> Icons.Default.Search
-                        HubTab.MyGames -> Icons.Default.Favorite
-                        HubTab.Profile -> Icons.Default.Person
+            if (!isDetailsScreen) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    HubTab.entries.forEach { tab ->
+                        val icon = when (tab) {
+                            HubTab.Home -> Icons.Default.Home
+                            HubTab.Library -> Icons.Default.Search
+                            HubTab.MyGames -> Icons.Default.Favorite
+                            HubTab.Profile -> Icons.Default.Person
+                        }
+                        val selected = when (tab) {
+                            HubTab.Home -> currentDestination?.hasRoute<HomeRoute>() == true
+                            HubTab.Library -> currentDestination?.hasRoute<LibraryRoute>() == true
+                            HubTab.MyGames -> currentDestination?.hasRoute<MyGamesRoute>() == true
+                            HubTab.Profile -> currentDestination?.hasRoute<ProfileRoute>() == true
+                        }
+                        NavigationBarItem(
+                            selected = selected,
+                            onClick = {
+                                when (tab) {
+                                    HubTab.Home -> navController.navigateTopLevel(HomeRoute)
+                                    HubTab.Library -> navController.navigateTopLevel(LibraryRoute())
+                                    HubTab.MyGames -> navController.navigateTopLevel(MyGamesRoute)
+                                    HubTab.Profile -> navController.navigateTopLevel(ProfileRoute)
+                                }
+                            },
+                            icon = { Icon(icon, contentDescription = tab.label) },
+                            label = { Text(tab.label) }
+                        )
                     }
-                    NavigationBarItem(
-                        selected = selectedTab == tab,
-                        onClick = { selectedTab = tab },
-                        icon = { Icon(icon, contentDescription = tab.label) },
-                        label = { Text(tab.label) }
-                    )
                 }
             }
         }
     ) { innerPadding ->
-        when (selectedTab) {
-            HubTab.Home -> HomeScreen(Modifier.padding(innerPadding))
-            HubTab.Library -> SimpleSection(
-                title = "Game Library",
-                subtitle = "সব Classic গেম এক জায়গায়",
-                modifier = Modifier.padding(innerPadding)
-            )
-            HubTab.MyGames -> SimpleSection(
-                title = "My Games",
-                subtitle = "তোমার পছন্দের ও সম্প্রতি খেলা গেম",
-                modifier = Modifier.padding(innerPadding)
-            )
-            HubTab.Profile -> SimpleSection(
-                title = "Player Profile",
-                subtitle = "তোমার গেমিং যাত্রা এখানে",
-                modifier = Modifier.padding(innerPadding)
-            )
+        NavHost(
+            navController = navController,
+            startDestination = HomeRoute,
+            modifier = Modifier.padding(innerPadding)
+        ) {
+            composable<HomeRoute> {
+                HomeScreen(
+                    onOpenLibrary = { query ->
+                        navController.navigate(LibraryRoute(query))
+                    },
+                    onOpenGame = { gameId ->
+                        navController.navigate(GameDetailsRoute(gameId))
+                    }
+                )
+            }
+            composable<LibraryRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<LibraryRoute>()
+                GameLibraryScreen(
+                    initialQuery = route.query,
+                    onGameClick = { gameId ->
+                        navController.navigate(GameDetailsRoute(gameId))
+                    }
+                )
+            }
+            composable<GameDetailsRoute> { backStackEntry ->
+                val route = backStackEntry.toRoute<GameDetailsRoute>()
+                GameDetailsScreen(
+                    game = GameCatalog.findById(route.gameId),
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable<MyGamesRoute> {
+                SimpleSection(
+                    title = "My Games",
+                    subtitle = "তোমার পছন্দের ও সম্প্রতি খেলা গেম"
+                )
+            }
+            composable<ProfileRoute> {
+                SimpleSection(
+                    title = "Player Profile",
+                    subtitle = "তোমার গেমিং যাত্রা এখানে"
+                )
+            }
         }
     }
 }
 
+private inline fun <reified T : Any> NavHostController.navigateTopLevel(route: T) {
+    navigate(route) {
+        popUpTo(graph.findStartDestination().id) {
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
+    }
+}
+
 @Composable
-private fun HomeScreen(modifier: Modifier = Modifier) {
+private fun HomeScreen(
+    onOpenLibrary: (String) -> Unit,
+    onOpenGame: (String) -> Unit
+) {
     var searchText by rememberSaveable { mutableStateOf("") }
 
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 28.dp),
         verticalArrangement = Arrangement.spacedBy(18.dp)
     ) {
@@ -172,6 +254,11 @@ private fun HomeScreen(modifier: Modifier = Modifier) {
                     singleLine = true,
                     placeholder = { Text("গেম খুঁজুন / Search games") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                    trailingIcon = {
+                        IconButton(onClick = { onOpenLibrary(searchText) }) {
+                            Icon(Icons.Default.Search, contentDescription = "Search games")
+                        }
+                    },
                     shape = RoundedCornerShape(16.dp)
                 )
             }
@@ -184,32 +271,39 @@ private fun HomeScreen(modifier: Modifier = Modifier) {
             ) {
                 Column(Modifier.padding(22.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text("RETRO COLLECTION", color = SoftBlue, fontSize = 11.sp, fontWeight = FontWeight.Bold, letterSpacing = 1.2.sp)
-                    Text("The classics
-never get old.", color = MaterialTheme.colorScheme.onPrimary, fontSize = 27.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold)
+                    Text("The classics\nnever get old.", color = MaterialTheme.colorScheme.onPrimary, fontSize = 27.sp, lineHeight = 32.sp, fontWeight = FontWeight.ExtraBold)
                     Text("এক জায়গায় ফিরে পাও পুরোনো গেমের মজা।", color = SoftBlue)
-                    TextButton(onClick = { }) {
+                    TextButton(onClick = { onOpenLibrary("") }) {
                         Text("Explore Games  →", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
         item {
-            SectionHeading("Continue Playing", "চালিয়ে যাও")
-            GameRow("Snake Classic", "Arcade • Classic", "↗", SoftBlue)
+            SectionHeading("Continue Playing", "চালিয়ে যাও", onOpenLibrary = { onOpenLibrary("") })
+            GameRow("Snake Classic", "Arcade • Classic", "S", SoftBlue) {
+                onOpenGame("snake-classic")
+            }
         }
         item {
-            SectionHeading("Popular Classics", "জনপ্রিয় গেম")
+            SectionHeading("Popular Classics", "জনপ্রিয় গেম", onOpenLibrary = { onOpenLibrary("") })
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                GameRow("Brick Breaker", "Arcade • Skill", "▦", SoftCoral)
-                GameRow("Space Shooter", "Action • Retro", "✦", SoftBlue)
-                GameRow("Pong Classic", "Sports • 2 Player", "◉", SoftCoral)
+                GameRow("Brick Breaker", "Arcade • Skill", "B", SoftCoral) {
+                    onOpenGame("brick-breaker")
+                }
+                GameRow("Space Shooter", "Action • Retro", "✦", SoftBlue) {
+                    onOpenGame("space-shooter")
+                }
+                GameRow("Pong Classic", "Sports • 2 Player", "P", SoftCoral) {
+                    onOpenGame("pong-classic")
+                }
             }
         }
     }
 }
 
 @Composable
-private fun SectionHeading(title: String, subtitle: String) {
+private fun SectionHeading(title: String, subtitle: String, onOpenLibrary: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -218,15 +312,24 @@ private fun SectionHeading(title: String, subtitle: String) {
             Text(title, color = DeepNavy, fontWeight = FontWeight.Bold, fontSize = 18.sp)
             Text(subtitle, color = Slate, fontSize = 12.sp)
         }
-        Text("See all", color = RoyalBlue, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+        TextButton(onClick = onOpenLibrary) {
+            Text("See all", color = RoyalBlue, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
+        }
     }
-    Spacer(Modifier.height(10.dp))
 }
 
 @Composable
-private fun GameRow(title: String, category: String, symbol: String, tileColor: androidx.compose.ui.graphics.Color) {
+private fun GameRow(
+    title: String,
+    category: String,
+    symbol: String,
+    tileColor: Color,
+    onClick: () -> Unit
+) {
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
@@ -249,15 +352,15 @@ private fun GameRow(title: String, category: String, symbol: String, tileColor: 
                 Text(title, color = DeepNavy, fontWeight = FontWeight.Bold)
                 Text(category, color = Slate, fontSize = 12.sp)
             }
-            Text("Play", color = RoyalBlue, fontWeight = FontWeight.Bold)
+            Text("Details  ›", color = RoyalBlue, fontWeight = FontWeight.Bold, fontSize = 12.sp)
         }
     }
 }
 
 @Composable
-private fun SimpleSection(title: String, subtitle: String, modifier: Modifier = Modifier) {
+private fun SimpleSection(title: String, subtitle: String) {
     Column(
-        modifier = modifier
+        modifier = Modifier
             .fillMaxSize()
             .background(WarmIvory)
             .padding(24.dp),
