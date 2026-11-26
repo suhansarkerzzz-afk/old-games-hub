@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -47,6 +49,8 @@ import com.oldgameshub.app.ui.theme.SoftBlue
 @Composable
 fun GameDetailsScreen(
     game: RetroGame?,
+    isFavorite: Boolean,
+    onFavoriteChange: (Boolean) -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -84,7 +88,14 @@ fun GameDetailsScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = DeepNavy)
                     }
-                    Text("Game Details", color = DeepNavy, fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Game Details", color = DeepNavy, fontWeight = FontWeight.Bold, fontSize = 18.sp, modifier = Modifier.weight(1f))
+                    IconButton(onClick = { onFavoriteChange(!isFavorite) }) {
+                        Icon(
+                            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                            contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                            tint = if (isFavorite) Coral else RoyalBlue
+                        )
+                    }
                 }
             }
 
