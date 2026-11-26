@@ -44,6 +44,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -60,6 +62,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.oldgameshub.app.data.GameCatalog
+import com.oldgameshub.app.data.HubViewModel
 import com.oldgameshub.app.navigation.GameDetailsRoute
 import com.oldgameshub.app.navigation.HomeRoute
 import com.oldgameshub.app.navigation.LibraryRoute
@@ -67,6 +70,8 @@ import com.oldgameshub.app.navigation.MyGamesRoute
 import com.oldgameshub.app.navigation.ProfileRoute
 import com.oldgameshub.app.ui.details.GameDetailsScreen
 import com.oldgameshub.app.ui.library.GameLibraryScreen
+import com.oldgameshub.app.ui.mygames.MyGamesScreen
+import com.oldgameshub.app.ui.profile.ProfileScreen
 import com.oldgameshub.app.ui.theme.Coral
 import com.oldgameshub.app.ui.theme.DeepNavy
 import com.oldgameshub.app.ui.theme.OldGamesHubTheme
@@ -101,6 +106,10 @@ private enum class HubTab(val label: String) {
 @Composable
 private fun OldGamesHubApp() {
     val navController = rememberNavController()
+    val hubViewModel: HubViewModel = viewModel()
+    val favoriteStates by hubViewModel.favorites.collectAsStateWithLifecycle()
+    val recentlyPlayed by hubViewModel.recentlyPlayed.collectAsStateWithLifecycle()
+    val favoriteGameIds = favoriteStates.map { it.gameId }.toSet()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     val isDetailsScreen = currentDestination?.hasRoute<GameDetailsRoute>() == true
@@ -160,28 +169,38 @@ private fun OldGamesHubApp() {
                 val route = backStackEntry.toRoute<LibraryRoute>()
                 GameLibraryScreen(
                     initialQuery = route.query,
+                    favoriteGameIds = favoriteGameIds,
                     onGameClick = { gameId ->
                         navController.navigate(GameDetailsRoute(gameId))
-                    }
+                    },
+                    onFavoriteChange = hubViewModel::setFavorite
                 )
             }
             composable<GameDetailsRoute> { backStackEntry ->
                 val route = backStackEntry.toRoute<GameDetailsRoute>()
                 GameDetailsScreen(
                     game = GameCatalog.findById(route.gameId),
+                    isFavorite = route.gameId in favoriteGameIds,
+                    onFavoriteChange = { isFavorite ->
+                        hubViewModel.setFavorite(route.gameId, isFavorite)
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }
             composable<MyGamesRoute> {
-                SimpleSection(
-                    title = "My Games",
-                    subtitle = "তোমার পছন্দের ও সম্প্রতি খেলা গেম"
+                MyGamesScreen(
+                    favorites = favoriteStates,
+                    recentlyPlayed = recentlyPlayed,
+                    onGameClick = { gameId ->
+                        navController.navigate(GameDetailsRoute(gameId))
+                    },
+                    onFavoriteChange = hubViewModel::setFavorite
                 )
             }
             composable<ProfileRoute> {
-                SimpleSection(
-                    title = "Player Profile",
-                    subtitle = "তোমার গেমিং যাত্রা এখানে"
+                ProfileScreen(
+                    favoriteCount = favoriteStates.size,
+                    playedCount = recentlyPlayed.size
                 )
             }
         }
