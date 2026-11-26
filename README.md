@@ -4,7 +4,7 @@ An offline-first Android home for classic and retro-inspired games.
 
 ## Project status
 
-**Phase 1 — Android foundation and navigation (in progress)**
+**Phase 1 — Android foundation and navigation: COMPLETE**
 
 - Kotlin + Jetpack Compose with Material 3
 - Android application ID: `com.oldgameshub.app`
@@ -17,11 +17,12 @@ An offline-first Android home for classic and retro-inspired games.
 - Type-safe Navigation Compose routes
 - Home screen with links to the Library and game details
 - Game Library with search, category filters and sorting
-- Game Details screen with game description, planned controls and status
+- Game Details screen with game description, planned controls and honest play status
+- GitHub Actions debug build completed successfully for the current main commit
 
 The current catalog contains eight retro-inspired game concepts. They are information-only entries: playable game engines have not been implemented yet. The Play action clearly reports that gameplay is coming later.
 
-The My Games and Profile tabs are still placeholders. Favorites persistence, game history, local multiplayer, cloud features and APK release work have not been implemented yet.
+The My Games and Profile tabs are navigation placeholders and are part of the next implementation phase. Favorites persistence, game history, local multiplayer, cloud features, physical-device testing and release APK work have not been implemented yet.
 
 ## Open the project
 
@@ -47,7 +48,7 @@ The debug APK is expected at:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The repository includes a GitHub Actions workflow for the debug build. A passing workflow is required before describing the build as verified.
+The GitHub Actions workflow runs the debug build. The current main commit has a successful workflow run; a physical-device install and gameplay test have not yet been performed.
 
 ## Development principles
 
@@ -60,8 +61,8 @@ The repository includes a GitHub Actions workflow for the debug build. A passing
 
 ## Roadmap
 
-1. Android foundation, Home, Library, Details and navigation
-2. Complete My Games and Profile with local persistence
+1. **Complete:** Android foundation, Home, Library, Details and navigation
+2. **Next:** Complete My Games and Profile with local persistence
 3. First original playable retro games
 4. Local save data, favorites and player stats
 5. Local Wi-Fi multiplayer exploration
