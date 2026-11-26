@@ -40,4 +40,21 @@ jobs:
           arch: x86_64
           profile: pixel_2
           emulator-boot-timeout: 900
-          script: gradle connectedDebugAndroidTest
+          script: |
+            adb shell pm list instrumentation
+            adb logcat -c
+            gradle connectedDebugAndroidTest || {
+              mkdir -p app/build/ci-diagnostics
+              adb logcat -d -v threadtime > app/build/ci-diagnostics/instrumentation-logcat.txt
+              adb shell dumpsys package com.oldgameshub.app > app/build/ci-diagnostics/app-package.txt
+              adb shell dumpsys package com.oldgameshub.app.test > app/build/ci-diagnostics/test-package.txt
+              exit 1
+            }
+
+      - name: Upload instrumentation diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-instrumentation-diagnostics
+          path: app/build/ci-diagnostics/
+          if-no-files-found: ignore
