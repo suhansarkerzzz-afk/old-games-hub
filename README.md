@@ -19,7 +19,7 @@ The Library, My Games and Profile tabs are currently starter placeholders. Game 
 ## Open the project
 
 1. Open this repository in Android Studio.
-2. Select the `development` branch.
+2. Use the `main` branch.
 3. Open the repository root as an Android/Gradle project.
 4. Allow Android Studio to sync Gradle.
 5. Run the `app` configuration on an Android 8.0+ device or emulator.
