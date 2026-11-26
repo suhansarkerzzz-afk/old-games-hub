@@ -39,6 +39,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -300,8 +301,17 @@ private fun HomeScreen(
         }
         item {
             SectionHeading("Continue Playing", "চালিয়ে যাও", onOpenLibrary = { onOpenLibrary("") })
-            GameRow("Snake Classic", "Arcade • Classic", "S", SoftBlue) {
-                onOpenGame("snake-classic")
+            Surface(
+                color = Color.White,
+                shape = RoundedCornerShape(18.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "গেম খেলার সুবিধা চালু হলে তোমার Progress এখানে দেখাবে।",
+                    color = Slate,
+                    fontSize = 13.sp,
+                    modifier = Modifier.padding(16.dp)
+                )
             }
         }
         item {
