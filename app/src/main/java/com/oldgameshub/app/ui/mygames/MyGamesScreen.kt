@@ -91,8 +91,8 @@ fun MyGamesScreen(
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                CollectionStat("Favorites", favorites.size.toString(), Icons.Default.Favorite)
-                CollectionStat("Played", recentlyPlayed.size.toString(), Icons.Default.History)
+                CollectionStat("Favorites", favorites.size.toString(), Icons.Default.Favorite, Modifier.weight(1f))
+                CollectionStat("Played", recentlyPlayed.size.toString(), Icons.Default.History, Modifier.weight(1f))
             }
         }
         if (visibleGames.isEmpty()) {
@@ -134,8 +134,13 @@ fun MyGamesScreen(
 }
 
 @Composable
-private fun CollectionStat(label: String, value: String, icon: androidx.compose.ui.graphics.vector.ImageVector) {
-    Surface(color = Color.White, shape = RoundedCornerShape(18.dp), modifier = Modifier.weight(1f)) {
+private fun CollectionStat(
+    label: String,
+    value: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    modifier: Modifier = Modifier
+) {
+    Surface(color = Color.White, shape = RoundedCornerShape(18.dp), modifier = modifier) {
         Row(
             modifier = Modifier.padding(14.dp),
             verticalAlignment = Alignment.CenterVertically,
