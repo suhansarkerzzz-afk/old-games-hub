@@ -49,6 +49,19 @@ class GameLibraryRepositoryTest {
     }
 
     @Test
+    fun downloadedFlagCanBeUpdatedWithoutChangingFavorite() = runBlocking {
+        repository.setFavorite("pong-classic", true)
+        repository.setDownloaded("pong-classic", true)
+
+        val saved = database.gameLibraryStateDao().findByGameId("pong-classic")!!
+        assertTrue(saved.isDownloaded)
+        assertTrue(saved.isFavorite)
+
+        repository.setDownloaded("pong-classic", false)
+        assertFalse(database.gameLibraryStateDao().findByGameId("pong-classic")!!.isDownloaded)
+    }
+
+    @Test
     fun playHistoryIncrementsAndKeepsFavoriteState() = runBlocking {
         repository.setFavorite("brick-breaker", true)
         repository.recordPlayed("brick-breaker")
