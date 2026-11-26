@@ -6,6 +6,8 @@ An offline-first Android home for classic and retro-inspired games.
 
 **Phase 1 — Android foundation and navigation: COMPLETE**
 
+**Phase 2 — My Games and local collection: IN PROGRESS**
+
 - Kotlin + Jetpack Compose with Material 3
 - Android application ID: `com.oldgameshub.app`
 - Minimum Android version: Android 8.0 (API 26)
@@ -22,7 +24,7 @@ An offline-first Android home for classic and retro-inspired games.
 
 The current catalog contains eight retro-inspired game concepts. They are information-only entries: playable game engines have not been implemented yet. The Play action clearly reports that gameplay is coming later.
 
-The My Games and Profile tabs are navigation placeholders and are part of the next implementation phase. Favorites persistence, game history, local multiplayer, cloud features, physical-device testing and release APK work have not been implemented yet.
+Phase 2 currently adds Room-backed favorite state, favorite toggles in Library and Details, My Games views for Favorites / Recently Played / Downloaded, and a local Player Profile overview. Downloaded-game management is still an empty state because a real download pipeline does not exist. Play history and Continue Playing will populate only after playable games can actually be launched. Local Room repository tests have been added; their CI result is pending.
 
 ## Open the project
 
@@ -62,7 +64,7 @@ The GitHub Actions workflow runs the debug build. The current main commit has a 
 ## Roadmap
 
 1. **Complete:** Android foundation, Home, Library, Details and navigation
-2. **Next:** Complete My Games and Profile with local persistence
+2. **In progress:** My Games, Favorites, local Room persistence and Profile
 3. First original playable retro games
 4. Local save data, favorites and player stats
 5. Local Wi-Fi multiplayer exploration
