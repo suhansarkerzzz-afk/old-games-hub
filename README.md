@@ -6,7 +6,7 @@ An offline-first Android home for classic and retro-inspired games.
 
 **Phase 1 — Android foundation and navigation: COMPLETE**
 
-**Phase 2 — My Games and local collection: IN PROGRESS**
+**Phase 2 — My Games, Favorites and local player profile: IMPLEMENTED**
 
 - Kotlin + Jetpack Compose with Material 3
 - Android application ID: `com.oldgameshub.app`
@@ -24,7 +24,7 @@ An offline-first Android home for classic and retro-inspired games.
 
 The current catalog contains eight retro-inspired game concepts. They are information-only entries: playable game engines have not been implemented yet. The Play action clearly reports that gameplay is coming later.
 
-Phase 2 currently adds Room-backed favorite state, favorite toggles in Library and Details, My Games views for Favorites / Recently Played / Downloaded, and a local Player Profile overview. Downloaded-game management is still an empty state because a real download pipeline does not exist. Play history and Continue Playing will populate only after playable games can actually be launched. Local Room repository tests have been added; their CI result is pending.
+Phase 2 implementation includes Room-backed local collection state, favorite toggles in Library and Details, My Games views for Favorites / Recently Played / Downloaded, a local Player Profile overview, and repository tests for favorite, play-history and downloaded-state persistence. The Downloaded view intentionally shows an empty state because the app has no real game-download pipeline. Recently Played and Continue Playing are wired to the local history model but will remain empty until playable games are implemented in a later phase; the current Play action does not pretend to launch a game.
 
 ## Open the project
 
@@ -50,7 +50,7 @@ The debug APK is expected at:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
-The GitHub Actions workflow runs the debug build. The current main commit has a successful workflow run; a physical-device install and gameplay test have not yet been performed.
+The GitHub Actions workflow builds the app and Android test APKs, runs unit tests, and runs Room instrumentation tests on an Android emulator. Check the latest run on the Actions page for the final result. A physical-device install and gameplay test have not yet been performed.
 
 ## Development principles
 
@@ -64,7 +64,7 @@ The GitHub Actions workflow runs the debug build. The current main commit has a 
 ## Roadmap
 
 1. **Complete:** Android foundation, Home, Library, Details and navigation
-2. **In progress:** My Games, Favorites, local Room persistence and Profile
+2. **Implemented:** My Games, Favorites, local Room persistence and Profile (play-history population and actual game downloads depend on later playable-game/download functionality)
 3. First original playable retro games
 4. Local save data, favorites and player stats
 5. Local Wi-Fi multiplayer exploration
