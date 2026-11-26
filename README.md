@@ -1,20 +1,27 @@
 # OLD GAMES HUB
 
-An offline-first Android home for classic and retro games.
+An offline-first Android home for classic and retro-inspired games.
 
 ## Project status
 
-**Phase 1 — Android foundation (in progress)**
+**Phase 1 — Android foundation and navigation (in progress)**
 
-- Kotlin + Jetpack Compose
+- Kotlin + Jetpack Compose with Material 3
 - Android application ID: `com.oldgameshub.app`
 - Minimum Android version: Android 8.0 (API 26)
 - Compile / target SDK: 35
-- Material 3 light theme using the approved Warm Ivory, Royal Blue, Deep Navy and Coral palette
-- Initial Home screen and bottom navigation
+- JDK 17, Android Gradle Plugin 8.7.3, Kotlin 2.0.21
+- Approved light theme: Warm Ivory, Royal Blue, Deep Navy and Coral
 - Bengali and English UI copy
+- Edge-to-edge support with keyboard resize handling
+- Type-safe Navigation Compose routes
+- Home screen with links to the Library and game details
+- Game Library with search, category filters and sorting
+- Game Details screen with game description, planned controls and status
 
-The Library, My Games and Profile tabs are currently starter placeholders. Game engines, playable titles, local multiplayer, persistence and APK release work have not been implemented yet.
+The current catalog contains eight retro-inspired game concepts. They are information-only entries: playable game engines have not been implemented yet. The Play action clearly reports that gameplay is coming later.
+
+The My Games and Profile tabs are still placeholders. Favorites persistence, game history, local multiplayer, cloud features and APK release work have not been implemented yet.
 
 ## Open the project
 
@@ -40,6 +47,8 @@ The debug APK is expected at:
 app/build/outputs/apk/debug/app-debug.apk
 ```
 
+The repository includes a GitHub Actions workflow for the debug build. A passing workflow is required before describing the build as verified.
+
 ## Development principles
 
 - Keep the app offline-first; no mandatory account or network connection.
@@ -51,10 +60,10 @@ app/build/outputs/apk/debug/app-debug.apk
 
 ## Roadmap
 
-1. Android foundation and navigation
-2. Complete Library and Game Details screens
+1. Android foundation, Home, Library, Details and navigation
+2. Complete My Games and Profile with local persistence
 3. First original playable retro games
 4. Local save data, favorites and player stats
 5. Local Wi-Fi multiplayer exploration
-6. Performance testing on low-memory devices
+6. Performance and device testing on low-memory phones
 7. Release signing and APK distribution
